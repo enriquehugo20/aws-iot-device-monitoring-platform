@@ -28,8 +28,10 @@ jobs:
     steps:
       - name: Validate deployment confirmation
         env:
-          CONFIRMATION: ${{ inputs.confirmation }}
+          CONFIRMATION: ${{ github.event.inputs.confirmation }}
         run: |
+          echo "Confirmation received: '${CONFIRMATION:-<empty>}'"
+
           if [ "$CONFIRMATION" != "apply aws-iot-device-monitoring-platform" ]; then
             echo "Deployment not confirmed."
             exit 1
