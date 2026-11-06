@@ -2,11 +2,6 @@ name: Terraform Apply
 
 on:
   workflow_dispatch:
-    inputs:
-      confirmation:
-        description: "Type apply aws-iot-device-monitoring-platform to confirm"
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -19,6 +14,7 @@ concurrency:
 jobs:
   apply:
     name: Terraform Plan and Apply
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     env:
@@ -26,22 +22,6 @@ jobs:
       TF_IN_AUTOMATION: true
 
     steps:
-      - name: Validate deployment confirmation
-        env:
-          CONFIRMATION: ${{ github.event.inputs.confirmation }}
-        run: |
-          echo "Confirmation received: '${CONFIRMATION:-<empty>}'"
-
-          if [ "$CONFIRMATION" != "apply aws-iot-device-monitoring-platform" ]; then
-            echo "Deployment not confirmed."
-            exit 1
-          fi
-
-          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
-            echo "Deployment must run from main."
-            exit 1
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
