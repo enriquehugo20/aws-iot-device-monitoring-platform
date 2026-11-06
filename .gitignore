@@ -1,0 +1,92 @@
+# ==================================================
+# Terraform
+# ==================================================
+
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform variable files (may contain secrets)
+*.tfvars
+*.tfvars.json
+
+# Keep example variable files
+!*.tfvars.example
+
+# ==================================================
+# AWS credentials and secrets
+# ==================================================
+
+.aws/
+.env
+.env.*
+!.env.example
+
+# IoT device certificates and private keys
+src/simulator/sensors/
+
+# Private keys and certificate signing requests
+*.pem
+*.key
+*.csr
+*.p12
+*.pfx
+
+# ==================================================
+# Python
+# ==================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.python-version
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+dist/
+build/
+*.egg-info/
+
+# ==================================================
+# IDE and operating system
+# ==================================================
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==================================================
+# Logs and temporary files
+# ==================================================
+
+*.log
+*.tmp
+*.bak
+
+# Lambda deployment packages
+*.zip
+
+.terraformrc
+terraform.rc
+
+*.secret
+
+*.secret
+
+# Allow AWS public root CA certificate
+!src/
+!src/simulator/
+!src/simulator/AmazonRootCA1.pem

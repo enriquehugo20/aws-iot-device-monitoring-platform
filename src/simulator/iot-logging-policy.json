@@ -1,0 +1,22 @@
+{
+    "Version":  "2012-10-17",
+    "Statement":  [
+                      {
+                          "Effect":  "Allow",
+                          "Resource":  "arn:aws:logs:us-east-1:276846898236:log-group:AWSIotLogsV2",
+                          "Action":  [
+                                         "logs:CreateLogGroup",
+                                         "logs:PutMetricFilter",
+                                         "logs:PutRetentionPolicy"
+                                     ]
+                      },
+                      {
+                          "Effect":  "Allow",
+                          "Resource":  "arn:aws:logs:us-east-1:276846898236:log-group:AWSIotLogsV2:log-stream:*",
+                          "Action":  [
+                                         "logs:CreateLogStream",
+                                         "logs:PutLogEvents"
+                                     ]
+                      }
+                  ]
+}

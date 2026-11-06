@@ -1,0 +1,93 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type apply aws-iot-device-monitoring-platform to confirm"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: aws-iot-device-monitoring-terraform
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: Terraform Plan and Apply
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      TF_IN_AUTOMATION: true
+
+    steps:
+      - name: Validate deployment confirmation
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          if [ "$CONFIRMATION" != "apply aws-iot-device-monitoring-platform" ]; then
+            echo "Deployment not confirmed."
+            exit 1
+          fi
+
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "Deployment must run from main."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Debug GitHub OIDC claims
+        shell: bash
+        run: |
+          TOKEN=$(curl -sS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+            | jq -r '.value')
+
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "Unable to obtain GitHub OIDC token."
+            exit 1
+          fi
+
+          export TOKEN
+          python3 -c '
+          import os, json, base64
+          token = os.environ["TOKEN"]
+          payload = token.split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload))
+          print("ISS:", claims.get("iss"))
+          print("AUD:", claims.get("aud"))
+          print("SUB:", claims.get("sub"))
+          '
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::276846898236:role/github-actions-terraform-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Initialize Terraform
+        run: terraform -chdir=terraform init -input=false
+
+      - name: Validate Terraform
+        run: terraform -chdir=terraform validate
+
+      - name: Terraform Plan
+        run: terraform -chdir=terraform plan -input=false -out=deploy.tfplan
+
+      - name: Terraform Apply
+        run: terraform -chdir=terraform apply -input=false -auto-approve deploy.tfplan
